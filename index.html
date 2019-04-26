@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Archdaily</title><!-- make your own with https://www.favicon.cc/-->
+     <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	 <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+		<style type="text/css">
+            body{font-family:helvetica;}
+				  		#Houses {
+							font-family:helvetica;
+									 font-size:16px;
+									 color:#ffffff;
+									 text-align:center;
+									 padding:15px;
+									 background-color:#999999;
+									 width:110px;
+									 height:16px;
+									 border-radius:40px;
+									 letter-spacing:2px;
+									 cursor:pointer;
+									 border-color:#000000;
+									 border:2px solid;
+								 }
+
+								 #Offices{
+									 font-family:helvetica;
+												font-size:16px;
+												color:#ffffff;
+												text-align:center;
+												padding:15px;
+												background-color:#999999;
+												width:110px;
+												height:16px;
+												border-radius:40px;
+												letter-spacing:2px;
+												cursor:pointer;
+												border-color:#000000;
+												border:2px solid;
+											}
+						  	#Apartments{
+												font-family:helvetica;
+														 font-size:16px;
+														 color:#ffffff;
+														 text-align:center;
+														 padding:15px;
+														 background-color:#999999;
+														 width:110px;
+														 height:16px;
+														 border-radius:40px;
+														 letter-spacing:2px;
+														 cursor:pointer;
+														 border-color:#000000;
+														 border:2px solid;
+													 }
+			    		 #Renovation{
+																	 font-family:helvetica;
+																				font-size:16px;
+																				color:#ffffff;
+																				text-align:center;
+																				padding:15px;
+																				background-color:#999999;
+																				width:110px;
+																				height:16px;
+																				border-radius:40px;
+																				letter-spacing:2px;
+																				cursor:pointer;
+																				border-color:#000000;
+																				border:2px solid;
+																			}
+							#Museum{
+									 																			 font-family:helvetica;
+									 																						font-size:16px;
+									 																						color:#ffffff;
+									 																						text-align:center;
+									 																						padding:15px;
+									 																						background-color:#999999;
+									 																						width:110px;
+									 																						height:16px;
+									 																						border-radius:40px;
+									 																						letter-spacing:2px;
+									 																						cursor:pointer;
+																															border-color:#000000;
+																															border:2px solid;
+									 																					}
+							#Others{
+																									 														 font-family:helvetica;
+																									 																	font-size:16px;
+																									 																	color:#ffffff;
+																									 																	text-align:center;
+																									 																	padding:15px;
+																									 																	background-color:#999999;
+																									 																	width:110px;
+																									 																	height:20px;
+																									 																	border-radius:40px;
+																									 																	letter-spacing:2px;
+																									 																	cursor:pointer;
+																																										border-color:#000000;
+																																										border:2px solid;
+																									 																}
+
+
+            #barchart{
+							width: 1300px;
+							height: 500px;
+							border-radius: 10px;
+							margin: auto;
+							background-color: #2F4A6D;
+							/* background-color: rgb(200, 200, 169); */
+							padding: 20px;
+						}
+
+						rect:hover {
+							fill: black;
+						}
+
+
+
+						#tooltip {
+							position: absolute;
+							width: 300px;
+							height: auto;
+							padding: 10px;
+							-webkit-border-radius: 10px;
+							-moz-border-radius: 10px;
+							border-radius: 10px;
+							-webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+							-moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+							box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+							pointer-events: none;
+						}
+
+						#tooltip.hidden {
+							display: none;
+						}
+
+						#tooltip p {
+							margin: 0;
+							font-family: sans-serif;
+							font-size: 13px;
+							line-height: 16px;
+						}
+
+
+						#legend3 {
+						    margin-right:30px;
+						}
+
+						.wood { background: #1F77B4;}
+						.concrete { background: #FF7F0E;}
+						.glass { background: #2CA02C;
+						}
+		</style>
+	</head>
+	  <div id="barchart"></div>
+		 <div id="barchart2"></div>
+	  <div id ="Houses">Houses</div>
+		<div id ="Offices">Offices</div>
+		<div id ="Apartments">Apartments</div>
+		<div id ="Renovation">Renovation</div>
+		<div id ="Museum">Museum</div>
+		<div id ="Others">Others</div>
+		<div id ="moreInfo"></div>
+	<body>
+		<div id="tooltip" class="hidden">
+			<p><strong></strong></p>
+			<p><span id="image"></span></p>
+		</div>
+
+
+
+
+	<script type="text/javascript">
+
+//create legend
+
+
+		var margin = {top: 100, bottom: 80, left: 60, right: 40}
+		var w1=1300
+		var h1=3000
+		var w = 1300 - margin.left - margin.right
+		var h = 3000 - margin.top - margin.bottom
+
+		var svg = d3.select("#barchart")
+		            .append("svg")
+								.attr("width", w + margin.left + margin.right)
+								.attr("height", h + margin.top + margin.bottom)
+								.append("g")
+								.attr("transform", "translate("+ margin.left +", "+ margin.top +")");
+
+            d3.csv("Archdaily_Clean_0425.csv")
+            .then(function(data){
+
+
+
+	  	  	var dataByYear = d3.nest()
+	  	  	  .key(function(d) { return d.Year; })
+	  	  	  .entries(data);
+                console.log(dataByYear)
+
+			  for(var i in dataByYear){
+				  // console.log(i)
+				  drawChart1(dataByYear[i],i)
+
+			  }
+            })
+           // .catch(function(error){console.log("error")})
+
+					 var colorByProduct = {
+			 			Concrete:"#FF8A47",
+			 			ConcreteHybrid:"#F15839",
+			 			Wood:"#FC6170",
+			 			WoodHybrid: "#ff9999",
+			 			Glass:"#8CEEEE",
+			 			GlassHybrid:"#26bfbf",
+			 			Brick:"#FFD747",
+			 			Plastic:"#cc3333",
+			 			Steel:"#62BD96",
+			 			SteelHybrid:"#00ff99",
+			 			Stone:"#FFFDA2",
+			 			StoneHybrid:"#ffff00",
+
+			 		}
+
+	function drawChart1(data,order){
+		// console.log(data)
+
+		//var year1 = data[0]
+		//console.log(year1)
+		//var subgroups = data.columns.slice(1)
+		//var groups = d3.map(data, function(d){return(d.Title)}).keys()
+
+		// create x axis
+		var xScale = d3.scaleBand()
+		               .domain([0,data.values.length])
+									 .range([0, w])
+									 .padding([0.4])
+
+		// create y axis
+		var yScale = d3.scaleBand()
+		               .domain([2012,2011,2010,2009,2008])
+					         .range([(h-1100)/5, 0])
+
+
+		svg.append("g")
+	  		.call(d3.axisLeft(yScale))
+			 .style("color", "white")
+
+
+		svg.append("g")
+			.selectAll("g")
+			.data(data.values)
+			.enter()
+			.append("g")
+			.attr("fill", function(d){
+				//console.log(d.Product, colorByProduct[d.Product])
+				return colorByProduct[d.Product]
+
+			})
+			.append("rect")
+			.attr("architects",function(d,i){
+				return d.Architects
+			})
+			.attr("class",function(d){
+				// console.log(d)
+                //NEW: For question 2 I gave the top rectangles a second class called topchart, now in the selectall, I use just that class to get the top rectangles.
+				return d.Category+" topChart"})
+			.attr("x",function(d,i){
+				return i*w/data.values.length;
+			})
+			.attr("y",10+order*70)
+			.attr("width",w/data.values.length)
+			.attr("height",40)
+			.on("click",function(d){
+				// console.log(d3.select(this).attr("class"))
+				d3.selectAll(".connect").remove()
+
+				var currentArchitect = d3.select(this).attr("architects")
+				var ox =d3.select(this).attr("x")
+				var oy = d3.select(this).attr("y")
+				//console.log(currentArchitect)
+				d3.selectAll(".topChart")
+				.attr("fill",function(d){
+					//console.log(d.Architects)
+					if(d.Architects == currentArchitect){
+					var endPoints= [
+						{x:ox,y:oy},
+						{x:d3.select(this).attr("x"),y:d3.select(this).attr("y")}
+					]
+
+					var line = d3.line()
+					.x(function(d){return d.x})
+					.y(function(d){return d.y})
+
+					svg.append("path")
+					.data([endPoints])
+					.attr("class","connect")
+					.attr("stroke","black")
+					.attr("fill","none")
+					.attr("d",line)
+						return "red"
+					}
+				//	var x = d3.select(this).attr("x")
+				//	var y = d3.select(this).attr("y")
+				//
+
+				})
+		    })
+
+				.on("mouseover",function(d){
+
+						var tx = parseFloat(d3.select(this).attr("x"))
+						var ty = parseFloat(d3.select(this).attr("yScale"))
+
+				 d3.select(this)
+				  .transition()
+					.attr("width", w/data.values.length+ 20)
+					.attr("opacity", 0.7)
+
+					  d3.select("#tooltip").classed("hidden", false);
+                    //NEW: get mouse x and y
+                        var mx = event.clientX
+                        var my = event.clientY
+                    //Set entire div to mouse x y
+
+						var tooltipDiv = d3.select("#tooltip")
+							.style("left", mx + "px")
+							.style("top", my + "px")
+					.style("background-color", "rgba(220, 220, 220, 0.8)")
+                    //add 2 sub divs, 1 for text 1 for image
+                    //first remove anything that might have been there before
+                      d3.selectAll("#textDiv").remove()
+                      d3.selectAll("#imageDiv").remove()
+                        var tooltipText = tooltipDiv.append("div").attr("id","textDiv")
+                        var tooltipImage = tooltipDiv.append("div").attr("id","imageDiv")
+
+                        //set the image part of the div to your image
+                        tooltipImage.append("img")
+	  	                            .attr('xlink:href', d.Image)
+	  	                            .attr('src', d.Image)
+                                  .attr('x',20)
+                                  .attr('y',20)
+	  	                            .attr('width', 300)
+	  	                            .attr('height', 300)
+
+                      //set the text part to your text
+						tooltipText
+							.text(d.Title)
+
+
+
+
+				})
+
+				.on("mouseout",function(d){
+
+				       d3.select(this)
+				              .transition()
+					          .attr("width", w/data.values.length)
+					          .attr("opacity", 1)
+
+					    d3.select("#tooltip").classed("hidden", true);
+
+                      d3.selectAll("#textDiv").remove()
+                      d3.selectAll("#imageDiv").remove()
+
+				})
+
+
+  }
+
+
+
+						// create title
+						svg.append("text")
+							 .attr("x", w1/2-50)
+						   .attr("y", -85)
+							 .attr("text-anchor", "middle")
+							 .attr("font-size", "15px")
+							 .attr("font-family", "sans-serif")
+							 .attr("fill", "white")
+							 .text("Material Used in Architecture Projects from 2008 - 2012")
+
+						// add data source
+						svg.append("text")
+							 .attr("x", w-80)
+							 .attr("y", 0)
+							 .attr("text-anchor", "middle")
+							 .attr("font-size", "9px")
+							 .attr("font-family", "sans-serif")
+							 .attr("fill", "grey")
+							 .text("Source: Archdaily (https://www.archdaily.com/)")
+
+						// add legend concrete
+							svg.append("text")
+								 .attr("x", w-365)
+								 .attr("y", -70)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Concrete")
+
+						svg.append("rect")
+							 .attr("x", w-400)
+						   .attr("y", -80)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#FF8A47")
+
+						// add legend Glass
+							svg.append("text")
+								 .attr("x", w-375)
+								 .attr("y", -50)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Glass")
+
+						svg.append("rect")
+							 .attr("x", w-400)
+						   .attr("y", -60)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#8CEEEE")
+
+						// add legend Steel
+							svg.append("text")
+								 .attr("x", w-375)
+								 .attr("y", -30)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Steel")
+
+						svg.append("rect")
+							 .attr("x", w-400)
+						   .attr("y", -40)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#62BD96")
+
+						// add legend ConcreteHybrid
+							svg.append("text")
+								 .attr("x", w-280)
+								 .attr("y", -70)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Concrete Hybrid")
+
+						svg.append("rect")
+							 .attr("x", w-330)
+						   .attr("y", -80)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#F15839")
+
+						// add legend Glass hybrid
+							svg.append("text")
+								 .attr("x", w-280)
+								 .attr("y", -50)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Glass Hybrid")
+
+						svg.append("rect")
+							 .attr("x", w-330)
+						   .attr("y", -60)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#26bfbf")
+
+
+						// add legend Steel hybrid
+							svg.append("text")
+								 .attr("x", w-280)
+								 .attr("y", -30)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Steel Hybrid")
+
+						svg.append("rect")
+							 .attr("x", w-330)
+						   .attr("y", -40)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#00ff99")
+
+
+						// add legend Wood
+							svg.append("text")
+								 .attr("x", w-190)
+								 .attr("y", -70)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Wood")
+
+						svg.append("rect")
+							 .attr("x", w-220)
+						   .attr("y", -80)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#FC6170")
+
+
+						// add legend Wood
+							svg.append("text")
+								 .attr("x", w-190)
+								 .attr("y", -50)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Brick")
+
+						svg.append("rect")
+							 .attr("x", w-220)
+						   .attr("y", -60)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#FFD747")
+
+
+						// add legend Stone
+							svg.append("text")
+								 .attr("x", w-190)
+								 .attr("y", -30)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Stone")
+
+						svg.append("rect")
+							 .attr("x", w-220)
+						   .attr("y", -40)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#FFFDA2")
+
+						// add legend WoodHybrid
+							svg.append("text")
+								 .attr("x", w-110)
+								 .attr("y", -70)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Wood Hybrid")
+
+						svg.append("rect")
+							 .attr("x", w-150)
+						   .attr("y", -80)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#ff9999")
+
+						// add legend Plastic
+							svg.append("text")
+								 .attr("x", w-120)
+								 .attr("y", -50)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Plastic")
+
+						svg.append("rect")
+							 .attr("x", w-150)
+						   .attr("y", -60)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#cc3333")
+
+						// add legend Stone Hybrid
+							svg.append("text")
+								 .attr("x", w-105)
+								 .attr("y", -30)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "10px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "grey")
+								 .text("Stone Hybrid")
+
+						svg.append("rect")
+							 .attr("x", w-150)
+						   .attr("y", -40)
+								 .attr('width',10)
+								 .attr('height',10)
+							 .attr("fill", "#ffff00")
+
+
+
+					     // Houses title
+							svg.append("text")
+								 .attr("x", 90)
+								 .attr("y", 790)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "15px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "black")
+								 .text("Materials used in #Houses")
+
+					     // Offices title
+							svg.append("text")
+								 .attr("x", 110)
+								 .attr("y", 1130)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "15px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "black")
+								 .text("Materials used in #Offices")
+
+					     // Apartments title
+							svg.append("text")
+								 .attr("x", 100)
+								 .attr("y", 1470)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "15px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "black")
+								 .text("Materials used in #Apartments")
+
+					     // Renovation title
+							svg.append("text")
+								 .attr("x", 100)
+								 .attr("y", 1800)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "15px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "black")
+								 .text("Materials used in #Renovation")
+
+					     // Museum title
+							svg.append("text")
+								 .attr("x", 95)
+								 .attr("y", 2150)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "15px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "black")
+								 .text("Materials used in #Museum")
+
+					     // Institutional Buildings title
+							svg.append("text")
+								 .attr("x", 135)
+								 .attr("y", 2490)
+								 .attr("text-anchor", "middle")
+								 .attr("font-size", "15px")
+								 .attr("font-family", "sans-serif")
+								 .attr("fill", "black")
+								 .text("Materials used in #Others")
+
+
+
+
+	   //group data by category
+				d3.csv("Archdaily_Clean_0425.csv")
+				.then(function(data){
+			var dataByCategory = d3.nest()
+				.key(function(d) { return d.Category; })
+				.entries(data);
+
+                console.log(dataByCategory)
+
+				for(var i in dataByCategory){
+
+				   	drawChart2(dataByCategory[i],i);
+
+				}
+						})
+
+
+				function drawChart2(data,order){
+
+
+
+					var xScale = d3.scaleBand()
+												 .domain([0,data.key.length])
+												 .range([0, w])
+												 .padding([0.4])
+
+
+					var yScale = d3.scaleLinear()
+												 .domain([0, 10])
+										 		.range([(h-700)/7, 0])
+
+          var yScaleforeach =d3.scaleBand()
+													 .domain(["Brick","Concrete","ConcreteHybrid","Fabric","Glass","GlassHybrid","Plastic","Steel","SteelHybrid","Stone","StoneHybrid","Wood","WoodHybrid"])
+												   .range([0, 300])
+
+													 d3.select("#Houses").on("click",function(){
+														 d3.selectAll("rect").attr("opacity",1)
+														 d3.selectAll(".Houses")
+														 .attr("opacity",1)
+														 .transition()
+														 .duration(800)
+														 .attr("x",function(d,i){
+															 return i*2
+														 })
+														 .attr("y",function(d,i){
+															 return 425
+														 })
+													 })
+
+													 d3.select("#Offices").on("click",function(){
+														 d3.selectAll("rect").attr("opacity",1)
+														 d3.selectAll(".Offices")
+														 .attr("opacity",1)
+														 .transition()
+														 .duration(800)
+														 .attr("x",function(d,i){
+															 return i*2
+														 })
+														 .attr("y",function(d,i){
+															 return 475
+														 })
+													 })
+
+													 d3.select("#Apartments").on("click",function(){
+														 d3.selectAll("rect").attr("opacity",1)
+														 d3.selectAll(".Apartments")
+														 .attr("opacity",1)
+														 .transition()
+														 .duration(800)
+														 .attr("x",function(d,i){
+															 return i*2
+														 })
+														 .attr("y",function(d,i){
+															 return 525
+														 })
+													 })
+
+													 d3.select("#Renovation").on("click",function(){
+														 d3.selectAll("rect").attr("opacity",1)
+														 d3.selectAll(".Renovation")
+														 .attr("opacity",1)
+														 .transition()
+														 .duration(800)
+														 .attr("x",function(d,i){
+															 return i*2
+														 })
+														 .attr("y",function(d,i){
+															 return 575
+														 })
+													 })
+
+													 d3.select("#Museum").on("click",function(){
+														 d3.selectAll("rect").attr("opacity",1)
+														 d3.selectAll(".Museum")
+														 .attr("opacity",1)
+														 .transition()
+														 .duration(800)
+														 .attr("x",function(d,i){
+															 return i*2
+														 })
+														 .attr("y",function(d,i){
+															 return 625
+														 })
+													 })
+
+													 d3.select("#Others").on("click",function(){
+														 d3.selectAll("rect").attr("opacity",1)
+														 d3.selectAll(".Others")
+														 .attr("opacity",1)
+														 .transition()
+														 .duration(800)
+														 .attr("x",function(d,i){
+															 return i*2
+														 })
+														 .attr("y",function(d,i){
+															 return 675
+														 })
+													 })
+
+
+													 					svg.append("g")
+													 						.selectAll("g")
+													 						.data(data.values)
+													 						.enter()
+													 						.append("g")
+													 						.attr("fill", function(d){
+													 							return colorByProduct[d.Product]
+
+													 						})
+													 						.append("rect")
+													 						.attr("class",function(d){
+													 							// console.log(d)
+													 							return d.Category
+													 						})
+													 						.attr("x",function(d,i){
+
+													 						  return i*500/data.values.length
+
+													 						})
+													 						.attr("y",function(d,i){
+													 						  return order*50
+													 				 	  })
+													 					 	.attr("width",500/data.values.length)
+													 						.attr("height",20)
+													 						.attr("transform", "translate(80, 450)")
+
+
+					// svg.append("g")
+					// 		.call(d3.axisLeft(yScale))
+					// 	 .style("color", "black")
+
+                    //NEW: subgroup of category by Material, then loop as you did before but for each material
+                    var groupCategoryByMaterial = d3.nest()
+        				.key(function(d) { return d.Product; })
+        				.entries(data.values);
+
+
+                        var totalProjectsNumber = data.values.length
+                        console.log(totalProjectsNumber)
+
+                        for(var m in groupCategoryByMaterial){
+                            var materialOrder = m
+                            var materialData = groupCategoryByMaterial[m]
+                            drawMaterial(order, materialData,materialOrder,yScaleforeach,totalProjectsNumber)
+                        }
+
+                    }
+                        function drawMaterial(categoryOrder, data,materialOrder,yScaleforeach,totalProjectsNumber){
+
+
+
+						 //
+							// 						svg.append("g")
+						 // 							 .selectAll("g")
+						 // 							 .data(data.values)
+						 // 							 .enter()
+						 // 							 .append("g")
+						 // 							 .attr("fill", function(d){
+						 // 								 return colorByProduct[d.Product]
+						 //
+						 // 							 })
+						 // 							 .append("rect")
+						 // 							 .attr("class",function(d){
+						 // 								 // console.log(d)
+						 // 								 return d.Category
+						 // 							 })
+						 // 							 .attr("x",function(d,i){
+						 // 											 //NEW: these bars must be the same width across materials to make a comparison between materials.
+						 // 								 return i*1500/totalProjectsNumber
+						 // //    						  return i*500/data.values.length
+						 //
+						 // 							 })
+						 // 							 .attr("y",function(d,i){
+						 // 															 //NEW: I put y based on bar height at 22 so that the bars are visible on same page.
+						 // 															 //TODO: you may have to adjust for number of projects by using totalProjectsNumber somewhere. you cannot make comparisons between the larger categories otherwise.
+						 // 								 return categoryOrder*340
+						 //
+						 // 								 //return yScaleforeach(d.Product)+order*340
+						 // 							 })
+						 // 							 .attr("width",1500/totalProjectsNumber)
+						 // 							 .attr("height",20)
+						 // 							 .attr("transform", "translate(0, 750)")
+						 //
+
+
+    					svg.append("g")
+    						.selectAll("g")
+    						.data(data.values)
+    						.enter()
+    						.append("g")
+    						.attr("fill", function(d){
+    							return colorByProduct[d.Product]
+
+    						})
+    						.append("rect")
+    						.attr("class",function(d){
+    							// console.log(d)
+    							return d.Category
+    						})
+    						.attr("x",function(d,i){
+                        //NEW: these bars must be the same width across materials to make a comparison between materials.
+    						  return i*2
+//    						  return i*500/data.values.length
+
+    						})
+    						.attr("y",function(d,i){
+                                //NEW: I put y based on bar height at 22 so that the bars are visible on same page.
+                                //TODO: you may have to adjust for number of projects by using totalProjectsNumber somewhere. you cannot make comparisons between the larger categories otherwise.
+    						  return materialOrder*22+categoryOrder*340
+
+    						  //return yScaleforeach(d.Product)+order*340
+    				 	  })
+    					 	.attr("width",20)
+    						.attr("height",20)
+    						.attr("transform", "translate(0, 800)")
+                        }
+
+
+
+        </script>
+	</body>
+</html>
